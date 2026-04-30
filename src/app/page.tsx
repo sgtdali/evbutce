@@ -19,11 +19,26 @@ export default function Home() {
       .select('*')
       .eq('type', 'gider')
       .order('date', { ascending: false })
-      .limit(20)
+      .limit(30)
 
     if (error) console.error('Hata:', error.message)
     else setTransactions(data || [])
     setLoading(false)
+  }
+
+  const handleDelete = async (id: string) => {
+    if (!confirm('Bu harcamayı silmek istediğinize emin misiniz?')) return
+
+    const { error } = await supabase
+      .from('ev_transactions')
+      .delete()
+      .eq('id', id)
+
+    if (error) {
+      alert('Silme hatası: ' + error.message)
+    } else {
+      fetchTransactions()
+    }
   }
 
   const totalExpense = transactions
@@ -38,12 +53,12 @@ export default function Home() {
 
       <div className="grid gap-4" style={{ gridTemplateColumns: '1fr', marginBottom: '3rem' }}>
         <div className="card" style={{ textAlign: 'center', background: 'rgba(239, 68, 68, 0.05)', borderColor: 'rgba(239, 68, 68, 0.2)' }}>
-          <p className="text-sm text-muted">Toplam Harcama (Son 20 İşlem)</p>
+          <p className="text-sm text-muted">Toplam Harcama (Son 30 İşlem)</p>
           <h2 style={{ fontSize: '3rem', margin: '0.5rem 0', color: 'var(--danger)' }}>₺{totalExpense.toLocaleString('tr-TR')}</h2>
         </div>
       </div>
 
-      <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 2fr' }}>
+      <div className="grid gap-8" style={{ gridTemplateColumns: '1fr 1.5fr' }}>
         <TransactionForm onSave={fetchTransactions} />
 
         <section className="card">
@@ -63,20 +78,52 @@ export default function Home() {
                   <div className="flex gap-4 items-center">
                     <div style={{ 
                       width: '40px', height: '40px', borderRadius: '10px', 
-                      background: 'rgba(239, 68, 68, 0.1)',
+                      background: t.person === 'Cansu' ? 'rgba(79, 70, 229, 0.1)' : 'rgba(239, 68, 68, 0.1)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      color: 'var(--danger)',
-                      fontWeight: 'bold'
+                      color: t.person === 'Cansu' ? 'var(--primary)' : 'var(--danger)',
+                      fontWeight: 'bold',
+                      fontSize: '0.75rem'
                     }}>
-                      -
+                      {t.person?.[0] || '-'}
                     </div>
                     <div>
-                      <p style={{ fontWeight: 600 }}>{t.description || 'Harcama'}</p>
-                      <p className="text-sm text-muted">{t.date}</p>
+                      <p style={{ fontWeight: 600 }}>{t.description || t.category || 'Harcama'}</p>
+                      <div className="flex gap-2 items-center">
+                        <span style={{ 
+                          fontSize: '0.7rem', 
+                          background: 'var(--card-border)', 
+                          padding: '2px 6px', 
+                          borderRadius: '4px',
+                          color: 'var(--text-muted)'
+                        }}>
+                          {t.category || 'Diğer'}
+                        </span>
+                        <p className="text-sm text-muted"> • {t.date}</p>
+                      </div>
                     </div>
                   </div>
-                  <div style={{ fontWeight: 700, color: 'var(--danger)' }}>
-                    ₺{Number(t.amount).toLocaleString('tr-TR')}
+                  
+                  <div className="flex gap-4 items-center">
+                    <div style={{ fontWeight: 700, color: 'var(--danger)' }}>
+                      ₺{Number(t.amount).toLocaleString('tr-TR')}
+                    </div>
+                    <button 
+                      onClick={() => handleDelete(t.id)}
+                      style={{ 
+                        background: 'none', 
+                        border: 'none', 
+                        color: '#94a3b8', 
+                        cursor: 'pointer',
+                        padding: '4px',
+                        fontSize: '1.2rem',
+                        transition: 'color 0.2s'
+                      }}
+                      onMouseOver={(e) => (e.currentTarget.style.color = 'var(--danger)')}
+                      onMouseOut={(e) => (e.currentTarget.style.color = '#94a3b8')}
+                      title="Sil"
+                    >
+                      &times;
+                    </button>
                   </div>
                 </div>
               ))
