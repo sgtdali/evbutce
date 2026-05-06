@@ -18,6 +18,7 @@ const CATEGORIES = [
   'Evcil Hayvan',
   'Ev Eşyası',
   'Borç/Kredi Ödemesi',
+  'Hediye',
   'Diğer'
 ]
 
